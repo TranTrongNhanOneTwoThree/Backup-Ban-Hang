@@ -1,0 +1,793 @@
+-------------------PHẦN TẠO BẢNG--------------------------
+create table KhachHang
+(
+	MaKh int identity(1,1),
+	HoTen nvarchar(100),
+	DiaChi nvarchar(100),
+	SDT varchar(11),
+	primary key(MaKh)
+)
+
+create table NhanVien
+(
+	MaNv int identity(1,1),
+	Hoten nvarchar(100),
+	NgayVaolam Date,
+	SDT varchar(11),
+	primary key(MaNv)
+)
+create table HoaDon
+(
+	Mahd int identity(1,1),
+	ngayghi date,
+	makh int foreign key references KhachHang(makh),
+	manv int foreign key references NhanVien(manv),
+	primary key(Mahd)
+)
+create table DanhMucHang
+(
+	MaDm int identity(1,1),
+	TenDm nvarchar(100)
+	primary key(madm)
+)
+create table NhaCungCap
+(
+	MaNhaCungCap int identity(1,1),
+	TenNhaCungCap nvarchar(100),
+	DiaCHi nvarchar(100),
+	SDT varchar(100),
+	primary key(Manhacungcap)
+)
+create table SanPham
+(
+	Masp int identity(1,1),
+	Tensp nvarchar(100),
+	Gia money,
+	DonViTinh nvarchar(20),
+	MaDM int foreign key references DanhMucHang(MaDM),
+	primary key (MaSp)
+)
+create table ChiTietHoaDon
+(
+	MaHd int foreign key references HoaDon(Mahd),
+	Masp int foreign key references SanPham(masp),
+	SoLuong int ,
+	primary key(mahd,Masp)
+)
+create table DonHang
+(
+	MaDh int identity(1,1),
+	NgayLap date,
+	Manv int foreign key references NhanVien(manv),
+	MaNhaCungCap int foreign key references NhaCungCap(manhacungcap),
+	primary key(Madh)
+)
+create table ChiTietDonHang
+(
+	MaDh int foreign  key references DonHang(madh),
+	Masp int foreign key references SanPham(masp),
+	GiaNhap money,
+	GiaBan money,
+	SoLuong int,
+	primary key(MaDh,Masp)
+)
+---------------PHẦN TẠO PROCEDURE----------------------
+create  proc sp_SanPham
+(
+	@StatementType nvarchar(20)='',
+	@Tensp nvarchar(100) =NULL,
+	@Gia money = NULL,
+	@DonViTinh nvarchar(100)=NULL,
+	@MaDm int = NUll,
+	@Masp int = NULL
+)
+as
+	begin
+		if @StatementType = 'Insert'
+			begin
+				insert into SanPham(Masp,Tensp,Gia,DonViTinh,MaDM)
+				values
+				(@Masp,@Tensp,@Gia,@DonViTinh,@MaDm)
+			end
+		if @StatementType = 'Select'
+			begin
+				select * from SanPham
+			 end
+		if @StatementType = 'Update'
+			begin
+				update SanPham
+				set Tensp =@Tensp,
+					Gia =@Gia,
+					DonViTinh = @DonViTinh,
+					MaDM =@MaDm
+			end
+		if @StatementType = 'Delete'
+		  begin
+			delete from SanPham
+			where Masp =@Masp
+		  end
+	end
+==================
+create or alter proc sq_DanhMucHang
+(
+	@StatementType nvarchar(20) ='',
+	@TenDm nvarchar(100)= NULL,
+	@MaDm int =0
+)
+as
+	begin
+		if @StatementType = 'Insert'
+			begin
+				insert into DanhMucHang
+				(TenDm) values (@TenDm)
+			end
+		if @StatementType = 'Select'
+			begin
+				select *
+				from DanhMucHang
+			end
+		if @StatementType = 'Update'
+			begin
+				update DanhMucHang
+				set TenDm = @TenDm
+				where MaDm = @MaDm
+			end
+		else if @StatementType = 'Delete'
+			begin
+			delete from DanhMucHang
+			where MaDm =@MaDm
+			end
+	end
+========
+create proc sp_NhaCungCap
+(
+	@StatementType nvarchar(20)='',
+	@TenNhaCungCap nvarchar(100)=NULL,
+	@DiaChi nvarchar(100)=NULL,
+	@SDT varchar(30)=NULL,
+	@MaNhaCungCap int=NULL
+)
+	as
+	begin
+		if @StatementType = 'Insert'
+			begin
+				insert into NhaCungCap(TenNhaCungCap,DiaCHi,SDT)
+				values
+				(@TenNhaCungCap,@DiaChi,@SDT)
+			end
+		if @StatementType = 'Select'
+			begin
+				select * from NhaCungCap
+			 end
+		if @StatementType = 'Update'
+			begin
+				update NhaCungCap
+				set TenNhaCungCap =@TenNhaCungCap,
+					DiaCHi =@DiaChi,
+					SDT =@SDT
+					where MaNhaCungCap=@MaNhaCungCap
+
+			end
+		if @StatementType = 'Delete'
+		  begin
+			delete from NhaCungCap
+			where MaNhaCungCap=@MaNhaCungCap
+		  end
+	end
+---------
+create proc sp_ChiTietDonHang
+(
+	@StatementType nvarchar(20)='',
+	@SoLuong int=NULL,
+	@MaDh int=NULL,
+	@Masp int=NULL
+)
+	as
+		begin
+			if @StatementType = 'Insert'
+			begin
+				insert into ChiTietDonHang(Soluong)
+				values
+				(@SoLuong)
+			end
+		if @StatementType = 'Select'
+			begin
+				select * from  ChiTietDonHang
+			 end
+		if @StatementType = 'Update'
+			begin
+				update ChiTietDonHang
+				set SoLuong=@SoLuong
+					where MaDh=@MaDh AND Masp=@Masp
+			end
+		if @StatementType = 'Delete'
+		  begin
+			delete from ChiTietDonHang
+			where MaDh=@MaDh AND Masp=@Masp
+		  end
+	end
+--------
+create proc sp_NhanVien
+(
+	@StatementType nvarchar(20)='',
+	@Hoten nvarchar(100)=NULL,
+	@NgayVaolam date=NULL,
+	@SDT varchar(30)=NULL,
+	@MaNv int=NULL
+)
+	as
+		begin
+			if @StatementType = 'Insert'
+			begin
+				insert into NhanVien(Hoten,NgayVaolam,SDT)
+				values
+				(@Hoten,@NgayVaolam,@SDT)
+			end
+		if @StatementType = 'Select'
+			begin
+				select * from  NhanVien
+			 end
+		if @StatementType = 'Update'
+			begin
+				update NhanVien
+				set Hoten=@Hoten,
+					NgayVaolam=@NgayVaolam,
+					SDT=@SDT
+					where MaNv=@MaNv
+			end
+		if @StatementType = 'Delete'
+		  begin
+			delete from NhanVien
+			where MaNv=@MaNv
+		  end
+	end
+-------------
+create proc sp_DonHang
+(
+	@StatementType nvarchar(20)='',
+	@NgayLap date=NULL,
+	@Manv int=NULL,
+	@MaNhaCungCap int=NULL,
+	@MaDh int=NULL
+)
+	as
+		begin
+			if @StatementType = 'Insert'
+			begin
+				insert into DonHang(NgayLap,Manv,MaNhaCungCap)
+				values
+				(@NgayLap,@Manv,@MaNhaCungCap)
+			end
+		if @StatementType = 'Select'
+			begin
+				select * from  DonHang
+			 end
+		if @StatementType = 'Update'
+			begin
+				update DonHang
+				set NgayLap=@NgayLap,
+					Manv=@Manv,
+					MaNhaCungCap=@MaNhaCungCap
+					where MaDh=@MaDh
+			end
+		if @StatementType = 'Delete'
+		  begin
+			delete from DonHang
+			where MaDh=@MaDh
+		  end
+	end
+--------------------
+-----------------------
+create proc sp_HoaDon
+(
+	@StatementType nvarchar(20)='',
+	@ngayghi date=NULL,
+	@makh int=NULL,
+	@manv int=NULL,
+	@Mahd int=NULL
+)
+	as
+		begin
+			if @StatementType = 'Insert'
+			begin
+				insert into HoaDon(ngayghi,makh,manv)
+				values
+				(@ngayghi,@makh,@manv)
+			end
+		if @StatementType = 'Select'
+			begin
+				select * from  HoaDon
+			 end
+		if @StatementType = 'Update'
+			begin
+				update HoaDon
+				set ngayghi=@ngayghi,
+					makh=@makh,
+					manv=@manv
+					where Mahd=@Mahd
+			end
+		if @StatementType = 'Delete'
+		  begin
+			delete from HoaDon
+			where Mahd=@Mahd
+		  end
+	end
+==========
+create proc sp_KhachHang
+(
+	@StatementType nvarchar(20)='',
+	@Hoten nvarchar(100)=NULL,
+	@DiaChi nvarchar(100)=NULL,
+	@SDT varchar(30)=NULL,
+	@MaKh int=NULL
+)
+	as
+		begin
+			if @StatementType = 'Insert'
+			begin
+				insert into KhachHang(HoTen,DiaChi,SDT)
+				values
+				(@Hoten,@DiaChi,@SDT)
+			end
+		if @StatementType = 'Select'
+			begin
+				select * from  KhachHang
+			 end
+		if @StatementType = 'Update'
+			begin
+				update KhachHang
+				set HoTen=@Hoten,
+					DiaChi=@DiaChi,
+					SDT=@SDT
+					where MaKh=@MaKh
+			end
+		if @StatementType = 'Delete'
+		  begin
+			delete from KhachHang
+			where MaKh=@MaKh
+		  end
+	end
+-----------------------
+create proc sp_ChiTietHoaDon
+(
+	@StatementType nvarchar(20)='',
+	@SoLuong int=NULL,
+	@MaHd int=NULL,
+	@Masp int=NULL
+
+)
+	as
+		begin
+			if @StatementType = 'Insert'
+			begin
+				insert into ChiTietHoaDon(SoLuong)
+				values
+				(@SoLuong)
+			end
+		if @StatementType = 'Select'
+			begin
+				select * from  ChiTietHoaDon
+			 end
+		if @StatementType = 'Update'
+			begin
+				update ChiTietHoaDon
+				set SoLuong=@SoLuong
+					where MaHd=@MaHd AND Masp=@Masp
+			end
+		if @StatementType = 'Delete'
+		  begin
+			delete from ChiTietHoaDon
+			where MaHd=@MaHd AND Masp=@Masp
+		  end
+	end
+
+-------------------PHẦN TẠO TRIGGER-----------------------------
+----Trigger trên bảng SanPham cho thao tác insert update xem danh mục hàng của sản phẩm có tồn tại hay ko
+
+create or alter trigger trg_SanPham
+on SanPham
+For insert, update
+as begin
+  declare @MaDM int
+  select @MaDM = MaDM from inserted
+  if not exists (select * from DanhMucHang where @MaDM= MaDM)
+	begin 
+	print N'Danh mục hàng không tồn tại';
+	rollback tran
+	end
+end
+-----Trigger trên bảng ChiTietDonHang cho thao tác insert update kiểm tra giá phải lớn hơn 0
+------và giá bán phải lớn hơn giá nhập
+
+create or alter trigger tr_ChiTietDonHang
+on ChiTietDonHang
+For insert, update
+as begin 
+	declare @GiaNhap money
+	declare @GiaBan money
+	select @GiaNhap = GiaNhap, @GiaBan=GiaBan from inserted
+	if (@GiaNhap <=0 or @GiaBan <=0)
+		begin 
+		print N'Giá nhập và giá bán phải lớn hơn 0';
+		rollback tran
+		end
+	else if (@GiaNhap > @GiaBan)
+		begin 
+		print N'Giá nhập phải nhỏ hơn giá bán';
+		rollback tran
+		end
+	else
+ 		begin 
+		print N'Thêm thành công';
+		end
+end
+-----trigger kiểm tra số điện thoại của nhà cung cấp phải là chữ số và đủ 10 kí tự
+create or alter trigger tr_NhanCungCap
+on NhaCungCap
+For insert, update
+as begin 
+declare @SDT varchar(100)
+select @SDT=SDT from inserted
+if (@SDT like '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' )
+begin
+print N'Thêm thành công';
+end
+else begin 
+print N'Số điện thoại phải đủ 10 kí tự số';
+rollback tran
+end
+end
+-----trigger kiểm tra số điện thoại của khách hàng  phải là chữ số và đủ 10 kí tự
+create or alter trigger tr_KhachHang
+on KhachHang
+For insert, update
+as begin 
+declare @SDT varchar(100)
+select @SDT=SDT from inserted
+if (@SDT like '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' )
+begin
+print N'Thêm thành công';
+end
+else begin 
+print N'Số điện thoại phải đủ 10 kí tự số';
+rollback tran
+end
+end
+-----trigger kiểm tra số điện thoại của nhân viên  cấp phải là chữ số và đủ 10 kí tự
+create or alter trigger tr_NhanVien
+on NhanVien
+For insert, update
+as begin 
+declare @SDT varchar(100)
+select @SDT=SDT from inserted
+if (@SDT like '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' )
+begin
+print N'Thêm thành công';
+end
+else begin 
+print N'Số điện thoại phải đủ 10 kí tự số';
+rollback tran
+end
+end
+----trigger chuyển họ tên nhân viên thành chữ hoa
+create or alter trigger tr_NhanVien
+on NhanVien
+For insert, update
+as begin 
+declare @hoten nvarchar(100)
+select @hoten=Hoten from inserted
+update NhanVien
+set Hoten=UPPER(@hoten)
+where Hoten=@hoten
+end
+----trigger cập nhật ngày lập đơn hàng nếu không được nhập 
+create or alter trigger tr_DonHang
+on DonHang
+For insert, update
+as begin 
+declare @count int
+select @count=count(NgayLap) from inserted
+print @count
+if @count =0
+begin
+update DonHang
+set NgayLap=GETDATE()
+where MaDh in (select MaDh from inserted)
+end
+end
+----trigger trên bảng chi tiết đơn hàng cho thao tác insert, update 
+-----kiểm tra số lượng sản phẩm phải lớn hơn 0
+create or alter trigger tr_ChiTietDonHang
+on ChiTietDonHang
+for insert, update
+as begin 
+declare @soLuong int
+select @soLuong = SoLuong from inserted
+if @soLuong <1
+begin
+print N'Số lượng sản phẩm phải lớn hơn 0'
+rollback tran
+end
+end
+---------------trigger trên bảng chi tiết hóa đơn cho thao tác insert, update 
+-----kiểm tra số lượng sản phẩm phải lớn hơn 0
+create or alter trigger tr_ChiTietHoaDon
+on ChiTietHoaDon
+for insert, update
+as begin 
+declare @soLuong int
+select @soLuong = SoLuong from inserted
+if @soLuong <1
+begin
+print N'Số lượng sản phẩm phải lớn hơn 0'
+rollback tran
+end
+end
+----------------
+----trigger trên bảng chi tiết đơn hàng cho thao tác insert, update 
+-----kiểm tra số lượng sản phẩm phải lớn hơn 0
+create or alter trigger tr_ChiTietDonHang
+on ChiTietDonHang
+for insert, update
+as begin 
+declare @soLuong int
+select @soLuong = SoLuong from inserted
+if @soLuong <1
+begin
+print N'Số lượng sản phẩm phải lớn hơn 0'
+rollback tran
+end
+end
+--------trigger trên bảng chi tiết hóa đơn số lượng sản phẩm bán không được
+----lớn hơn số lượng còn
+create or alter trigger tr_KtSoLuong
+on ChiTietHoaDon
+for insert, update
+as begin 
+	declare @SlDangNhap int
+	declare @NgayLapHd date
+	declare @MaSp int
+	declare @MaHd int
+	select @MaHd=MaHd from inserted
+	select @MaSp=Masp from inserted
+	select @SlDangNhap =SoLuong from inserted
+	select @NgayLapHd=ngayghi 
+		from HoaDon hd
+		where Mahd= @MaHd
+	declare @MaDh int
+	declare @NgayLapDh date
+	declare @Dem int
+	select @NgayLapDh=max(NgayLap),@Dem=count(NgayLap)
+	from DonHang dh, ChiTietDonHang ct
+	where dh.MaDh= ct.MaDh and NgayLap <= @NgayLapHd and MaSp=@MaSp
+	select @MaDh=MaDh from DonHang where NgayLap=@NgayLapDh
+	declare @SlNhap int
+	select @SlNhap = SoLuong from ChiTietDonHang where MaDh= @MaDh and Masp=@MaSp
+	
+	declare @TongDaBan int
+	
+	declare @DemHai int
+
+	select @TongDaBan=sum(SoLuong), @DemHai=COUNT(Masp)
+	from ChiTietHoaDon ct, HoaDon hd
+	where ct.Masp=@MaSp
+	and ct.MaHd=hd.MaHd
+	and hd.ngayghi >= @NgayLapDh
+	and hd.ngayghi <=@NgayLapHd
+	and hd.Mahd not in (@MaHd)
+	if(@DemHai=0)
+	set @TongDaBan=0
+	
+	
+	declare @SlCon int
+	set @SlCon= @SlNhap-@TongDaBan
+		
+	if (@SlCon <@SlDangNhap) 
+		begin 
+		print N'Số lượng chỉ còn'+str(@SlCon)
+		rollback tran
+		end
+	else if(@Dem=0)
+		begin
+		print N'Hàng chưa được nhập'
+		rollback tran
+		end
+end
+----------------PHẦN TẠO FUNCTION---------------------
+-------function tinh so luong san pham con
+create or alter function SlSpCon(@Masp int)
+returns int
+as begin 
+	declare @SlDaBan int
+	declare @SlDaNhap int
+	declare @SlCon int
+	select @SlDaBan = sum(SoLuong) from ChiTietHoaDon
+	where Masp =@Masp
+	select @SlDaNhap =sum(SoLuong) from ChiTietDonHang
+	where Masp =@Masp
+	set @SlCon = @SlDaNhap - @SlDaBan
+	return @SlCon
+end
+-----function lay ra gia san pham theo hoa don va ma san pham
+
+create or alter function GetPrice(@Mahd int, @MaSp int)
+returns money
+as begin
+declare @NgayLap date
+declare @GiaBan money
+declare @NgayLapHoaDon date
+declare @MaDh int
+select @NgayLapHoaDon= ngayghi from HoaDon where Mahd=@Mahd
+select @NgayLap=max(NgayLap)
+from DonHang dh, ChiTietDonHang ct
+where dh.MaDh=ct.MaDh and NgayLap <=@NgayLapHoaDon and MaSp =@MaSp
+
+select @MaDh=MaDh from DonHang where NgayLap=@NgayLap
+
+select @GiaBan=GiaBan from ChiTietDonHang where MaDh=@MaDh and Masp=@Masp
+return @GiaBan
+end
+-----function tinh tong tien hoa don theo ma hoa don
+create or alter function GetTotal(@Mahd int)
+returns money
+as begin 
+declare @total money
+select @total=sum(dbo.GetPrice(@Mahd,Masp)*SoLuong)
+	from ChiTietHoaDon
+	where Mahd=@Mahd
+	return @total
+end
+-------- Lay ra gia san pham nhap theo ma san pham va ma hoa don---
+create or alter function GetPriceNhap(@Mahd int, @MaSp int)
+returns money
+as begin
+declare @NgayLap date
+declare @GiaNhap money
+declare @NgayLapHoaDon date
+declare @MaDh int
+select @NgayLapHoaDon= ngayghi from HoaDon where Mahd=@Mahd
+select @NgayLap=max(NgayLap)
+from DonHang dh, ChiTietDonHang ct
+where dh.MaDh=ct.MaDh and NgayLap <=@NgayLapHoaDon and MaSp =@MaSp
+
+select @MaDh=MaDh from DonHang where NgayLap=@NgayLap
+
+select @GiaNhap=GiaNhap from ChiTietDonHang where MaDh=@MaDh and Masp=@Masp
+return @GiaNhap
+end
+------- tinh gia tri hoa don theo gia nhap san pham
+create or alter function GetTotalNhap(@Mahd int)
+returns money
+as begin 
+declare @total money
+select @total=sum(dbo.GetPriceNhap(@Mahd,Masp)*SoLuong)
+	from ChiTietHoaDon
+	where Mahd=@Mahd
+	return @total
+end
+-------------Tính số lượng sản phẩm chưa bán----------
+create or alter function KtSoLuong(@MaSp int)
+returns int
+as begin 
+	declare @NgayLapHd date
+	declare @MaHd int
+	declare @DemBa int
+	select @NgayLapHd=max(ngayghi) , @DemBa=count(ngayghi)
+		from HoaDon hd, ChiTietHoaDon ct
+		where hd.Mahd= ct.MaHd and ct.Masp=@MaSp
+
+	select @MaHd=MaHd from HoaDon where ngayghi=@NgayLapHd
+	declare @MaDh int
+	declare @NgayLapDh date
+	declare @Dem int
+	
+	if(@DemBa=0)
+		begin 
+			select @NgayLapDh=max(NgayLap),@Dem=count(NgayLap)
+			from DonHang dh, ChiTietDonHang ct
+			where dh.MaDh= ct.MaDh and NgayLap <= getdate() and MaSp=@MaSp
+		end
+	else begin 
+			select @NgayLapDh=max(NgayLap),@Dem=count(NgayLap)
+			from DonHang dh, ChiTietDonHang ct
+			where dh.MaDh= ct.MaDh and NgayLap <= @NgayLapHd and MaSp=@MaSp
+	end
+
+
+	select @MaDh=MaDh from DonHang where NgayLap=@NgayLapDh
+	declare @SlNhap int
+	select @SlNhap = SoLuong from ChiTietDonHang where MaDh= @MaDh and Masp=@MaSp
+	
+	declare @TongDaBan int
+	
+	declare @DemHai int
+
+	select @TongDaBan=sum(SoLuong), @DemHai=COUNT(Masp)
+	from ChiTietHoaDon ct, HoaDon hd
+	where ct.Masp=@MaSp
+	and ct.MaHd=hd.MaHd
+	and hd.ngayghi >= @NgayLapDh
+	and hd.ngayghi <=@NgayLapHd
+	--and hd.Mahd not in (@MaHd)
+	if(@DemHai=0) or(@DemBa=0)
+	set @TongDaBan=0
+	if(@Dem=0)
+	set @SlNhap=0
+	
+	
+	declare @SlCon int
+	set @SlCon= @SlNhap-@TongDaBan
+	 return @SlCon
+end
+-----Lấy giá nhập của sản phẩm--------------
+create or alter function GiaNhap(@Masp int)
+returns money
+as begin 
+	declare @Gia money
+	declare @Ngay date
+	declare @Dem int
+	
+	 select @Ngay=max(dh.NgayLap), @Dem=count(dh.NgayLap) from ChiTietDonHang ct, DonHang dh
+		where dh.MaDh=ct.MaDh and ct.Masp=@Masp
+
+	select @Gia= ct.GiaNhap from ChiTietDonHang ct, DonHang dh 
+		where ct.MaDh=dh.MaDh and dh.NgayLap in (@Ngay)
+		if(@Dem=0)
+		set @Gia=0
+	return @Gia
+end
+-----------Lấy giá bán của sản phẩm-------
+create or alter function GiaBan(@Masp int)
+returns money
+as begin 
+	declare @Gia money
+	declare @Ngay date
+	declare @Dem int
+	
+	 select @Ngay=max(dh.NgayLap), @Dem=count(dh.NgayLap) from ChiTietDonHang ct, DonHang dh
+		where dh.MaDh=ct.MaDh and ct.Masp=@Masp
+
+	select @Gia= ct.GiaBan from ChiTietDonHang ct, DonHang dh 
+		where ct.MaDh=dh.MaDh and dh.NgayLap in (@Ngay)
+		if(@Dem=0)
+		set @Gia=0
+	return @Gia
+end
+---------------------PHẦN PHÂN QUYỀN----------------------------
+---------Select thông tin user của login---------
+use BanHang
+go
+SELECT su.name as DatabaseUser
+FROM sys.sysusers su
+join sys.syslogins sl on sl.sid = su.sid
+where sl.name = 'Nhan' -- login
+---------Tạo thông tin login------
+create login Nhan with password = 'nhan'
+create login Phuoc with password = 'phuoc'
+create login Duong with password = 'duong'
+create login Nghia with password='Nghia'
+create login Bao with password= 'Bao'
+--------Tạo user cho từng login-----------
+create user danhmuc  for login Nhan
+create user nhacungcap for login Phuoc
+create user khachhang for login Duong
+create user nhanvien for login Nghia
+create user hoadon for login Bao
+---------Phân quyền ở mức bảng-------
+grant alter on dbo.DanhMucHang to danhmuc
+grant select, insert, update, delete on dbo.DanhMucHang to danhmuc
+grant select, insert, update, delete on dbo.NhaCungCap to nhacungcap
+grant select, insert, update, delete on dbo.NhanVien to nhanvien
+grant select, insert, update, delete on dbo.KhachHang to khachhang
+grant select, insert, update, delete on dbo.HoaDon to hoadon
+-----------///////////////-------------------
+-----------Một số câu truy vấn-------
+-----Tính tổng tiền của hóa đơn có mã XXX-----
+use BanHang
+go
+select Mahd,dbo.GetTotal(Mahd) as TongTien from HoaDon where Mahd=XXX
+-------Lấy số sản phẩm chưa bán của sản phẩm Y----
+select Masp, dbo.KtSoLuong(Masp) as SoLuong from SanPham where Masp=Y
+-------Tinh tien lai cua mot don hang-------
+select dbo.GetTotal(Mahd)-dbo.GetTotalNhap(Mahd) as TienLoi, Mahd,dbo.GetTotal(Mahd) as TienBan,dbo.GetTotalNhap(Mahd) as TienNhap from HoaDon where Mahd=1
+
